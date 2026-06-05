@@ -1,6 +1,9 @@
+import dotenv from "dotenv";
+
 import express from "express";
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
+dotenv.config();
 
 import { connectDB } from "./config/database.js";
 import { PORT } from "./config/constants.js";
