@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket Test</title>
+</head>
+<body>
+  <h2>WebSocket Test</h2>
+  <button onclick="createRoom()">Create Room</button>
+
+  <script>
+    const ws = new WebSocket("ws://localhost:3000");
+
+    ws.onopen = () => console.log("CONNECTED");
+    ws.onmessage = (msg) => console.log("FROM SERVER:", msg.data);
+    ws.onclose = () => console.log("DISCONNECTED");
+
+    function createRoom() {
+      ws.send(JSON.stringify({ type: "create_room" }));
+    }
+  </script>
+</body>
+</html>
