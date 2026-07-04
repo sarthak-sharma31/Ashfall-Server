@@ -1,0 +1,9 @@
+{
+  "files": [
+    {
+      "name": "gameplay_config.json",
+      "url": "http://localhost:3000/patches/gameplay_config.json",
+      "hash": "f237deb1e3bcfeb1527a015b70c1a720422ed6d4a58877b2eb921045412791f5"
+    }
+  ]
+}
