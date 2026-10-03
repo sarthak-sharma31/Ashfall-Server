@@ -64,6 +64,27 @@ const playerSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+
+    // Login
+    authTokenHash: {
+        type: String,
+        default: null
+    },
+
+    googleSub: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+
+    email: {
+        type: String,
+        default: ""
+    },
+
+    lastLogin: {
+        type: Date
     }
 });
 
