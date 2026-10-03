@@ -1,4 +1,9 @@
-import handleGuestLogin
+import {
+  handleGuestLogin,
+  handleResumeSession,
+  handleGoogleLogin,
+  handleLogout
+}
 from "../features/auth/authHandler.js";
 
 import {
@@ -22,6 +27,12 @@ from "../features/combat/combatHandler.js";
 const handlers = {
 
   guest_login: handleGuestLogin,
+
+  resume_session: handleResumeSession,
+
+  google_login: handleGoogleLogin,
+
+  logout: handleLogout,
 
   start_matchmaking: startMatchmaking,
 
