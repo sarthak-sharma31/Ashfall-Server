@@ -1,11 +1,12 @@
-import dotenv from "dotenv";
+// Must be the first import: ES modules run all imports before the rest of this file,
+// so a later dotenv.config() call would load .env only after other modules had already read process.env.
+import "dotenv/config";
 
 import express from "express";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import { WebSocketServer } from "ws";
-dotenv.config();
 
 import { connectDB } from "./config/database.js";
 import { PORT } from "./config/constants.js";
@@ -20,6 +21,12 @@ const server = createServer(app);
 const wss = new WebSocketServer({ server });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Which settings were found (names only, never values)
+const envCheck = ["MONGODB_URI", "MONGO_URI", "GOOGLE_CLIENT_IDS", "MAX_PLAYERS", "LOBBY_DURATION", "HIDE_DURATION", "HUNT_DURATION"]
+  .map((name) => `${name}=${process.env[name] ? "set" : "-"}`)
+  .join("  ");
+console.log("⚙️ Env:", envCheck);
 
 connectDB();
 

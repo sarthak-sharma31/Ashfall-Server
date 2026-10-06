@@ -5,15 +5,17 @@ import mongoose from "mongoose";
 mongoose.set("bufferTimeoutMS", 5000);
 
 export async function connectDB() {
-    if (!process.env.MONGODB_URI) {
-        console.warn("⚠️ MONGODB_URI is not set - using a local database. On Railway, add a MongoDB service and set MONGODB_URI.");
+    // MONGO_URI is accepted too (the name used in the original .env)
+    const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
+    if (!uri) {
+        console.warn("⚠️ MONGODB_URI is not set - using a local database. On Railway, add it under Variables.");
     }
 
     mongoose.connection.on("disconnected", () => console.warn("⚠️ MongoDB disconnected"));
     mongoose.connection.on("reconnected", () => console.log("✅ MongoDB reconnected"));
 
     try {
-        await mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/propocalypse", {
+        await mongoose.connect(uri || "mongodb://127.0.0.1:27017/propocalypse", {
             serverSelectionTimeoutMS: 10000
         });
 
