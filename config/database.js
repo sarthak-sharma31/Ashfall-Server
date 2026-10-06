@@ -14,7 +14,8 @@ export async function connectDB() {
 
     try {
         // Set MONGODB_URI on the host (e.g. Railway / MongoDB Atlas); falls back to a local database
-        await mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/propocalypse", {
+        await mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://sarthak312005_db_user:AiumBuba@cluster0.wpfdhpu.mongodb.net/?appName=Cluster0", {
+        // await mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/propocalypse", {
             serverSelectionTimeoutMS: 10000
         });
 
