@@ -5,8 +5,13 @@ import {
   alive,
   health,
   roundNumber,
-  roundScores
+  roundScores,
+  currentProp,
+  playerState,
+  clients
 } from "../../state/gameState.js";
+
+import { cleanupRoom } from "../rooms/roomService.js";
 
 import {
   LOBBY_DURATION,
@@ -216,6 +221,61 @@ function endMatch(roomId) {
 
   room.state = "ended";
   clearRoomTimers(roomId);
+
+  // Players are back in the menu by then
+  setRoomTimer(roomId, "dispose", () => disposeRoom(roomId), 30);
+}
+
+// Frees everything a room used. Called after the match ends, or when every real player left.
+export function disposeRoom(roomId) {
+  const room = rooms[roomId];
+  if (!room) return;
+
+  clearRoomTimers(roomId);
+  delete roundTimers[roomId];
+
+  // State is keyed by player id: leave it alone for anyone already playing in another room
+  const inOtherRoom = id => [...clients.values()].some(c => c.playerId === id && c.roomId && c.roomId !== roomId);
+
+  for (const id of room.players) {
+    if (inOtherRoom(id)) continue;
+    delete teams[id];
+    delete alive[id];
+    delete health[id];
+    delete currentProp[id];
+    delete playerState[id];
+  }
+  for (const client of clients.values()) {
+    if (client.roomId === roomId) client.roomId = null;
+  }
+
+  delete roomPhase[roomId];
+  delete roundNumber[roomId];
+  delete roundScores[roomId];
+  cleanupRoom(roomId);
+}
+
+// A player's connection closed during a match: take them out so the match can still finish
+export function playerLeft(roomId, playerId) {
+  const room = rooms[roomId];
+  if (!room) return;
+
+  const stillHere = room.players.some(id =>
+    id !== playerId && !id.startsWith("bot_") &&
+    [...clients.values()].some(c => c.playerId === id && c.roomId === roomId)
+  );
+  if (!stillHere) {
+    disposeRoom(roomId);
+    return;
+  }
+
+  // Out of the room (later rounds, team counts and the win check only use room.players)
+  room.players = room.players.filter(id => id !== playerId);
+  if (!room.hasSpawned) return; // still loading: the others just stop waiting for them
+
+  alive[playerId] = false;
+  broadcast(roomId, "player_left", { playerId });
+  checkWin(roomId);
 }
 
 function setRoomTimer(roomId, key, callback, seconds) {

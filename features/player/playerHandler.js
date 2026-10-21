@@ -10,6 +10,7 @@ import {
 } from "../../state/gameState.js";
 
 import { broadcast, send } from "../../utils/socketUtils.js";
+import { resolveActor } from "../../utils/actorUtils.js";
 
 export function handlePropChange(ws, data) {
 
@@ -17,10 +18,11 @@ export function handlePropChange(ws, data) {
 
   if (!client?.roomId) return;
 
-  currentProp[client.playerId] = data.prop;
+  const playerId = resolveActor(client, data?.playerId);
+  currentProp[playerId] = data.prop;
 
   broadcast(client.roomId, "prop_change", {
-    playerId: client.playerId,
+    playerId,
     prop: data.prop
   });
 
@@ -32,7 +34,10 @@ export function handlePlayerPosition(ws, data) {
 
   if (!client?.roomId) return;
 
-  playerState[client.playerId] = {
+  // Bot positions come from the host with the bot's id
+  const playerId = resolveActor(client, data?.playerId);
+
+  playerState[playerId] = {
     position: data.position,
     rotation: data.rotation,
     camPosition: data.camPosition,
@@ -40,7 +45,7 @@ export function handlePlayerPosition(ws, data) {
   };
 
   broadcast(client.roomId, "player_position", {
-    playerId: client.playerId,
+    playerId,
     position: data.position,
     rotation: data.rotation,
     camPosition: data.camPosition,
@@ -62,11 +67,19 @@ export function handleSceneLoaded(ws) {
   roomReady[roomId] ??= {};
   roomReady[roomId][client.playerId] = true;
 
+  checkAllReady(roomId);
+}
+
+// Spawns everyone once every real player in the room has loaded the map
+export function checkAllReady(roomId) {
+  const room = rooms[roomId];
+  if (!room) return;
+
   const realPlayers = room.players.filter(id => !id.startsWith("bot_"));
 
-  const allRealPlayersReady = realPlayers.every(
-    id => roomReady[roomId][id]
-  );
+  // Nobody may have loaded yet (a player can leave during loading)
+  const ready = roomReady[roomId] ?? {};
+  const allRealPlayersReady = realPlayers.every(id => ready[id]);
 
   if (!allRealPlayersReady) return;
   if (room.hasSpawned) return;
@@ -100,6 +113,7 @@ function spawnPlayers(roomId) {
         playerId,
         isBot: playerId.startsWith("bot_"),
         character: loadout.character ?? "DefaultSoldier",
+        name: loadout.name ?? "",
         team: "none",
         position: spawnPoints[index % spawnPoints.length]
       });

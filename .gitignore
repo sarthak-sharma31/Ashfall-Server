@@ -24,3 +24,6 @@ logs
 
 # Environment variables
 .env*
+
+# Meta files
+*.meta

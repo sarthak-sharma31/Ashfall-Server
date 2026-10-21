@@ -22,6 +22,4 @@ export const roundScores = {};
 
 export const botIds = {};
 
-export let matchmakingQueue = [];
 
-export let matchmakingTimer = null;

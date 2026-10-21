@@ -8,6 +8,10 @@ import handleSocketEvent from "./eventRouter.js";
 
 import { cancelMatchmaking } from "../features/matchmaking/matchmakingService.js";
 
+import { playerLeft } from "../features/game/gameFlow.js";
+
+import { checkAllReady } from "../features/player/playerHandler.js";
+
 // Events that a client waits on; if they crash, the client must still get an answer
 const LOGIN_EVENTS = new Set(["guest_login", "resume_session", "google_login"]);
 
@@ -81,11 +85,14 @@ export default function initializeSocket(wss) {
 
       cancelMatchmaking(ws);
 
+      const roomId = clients.get(ws)?.roomId;
+
       clients.delete(ws);
 
-      // later:
-      // remove from rooms
-      // cleanup room
+      if (roomId) {
+        playerLeft(roomId, playerId);
+        checkAllReady(roomId);
+      }
 
     });
 

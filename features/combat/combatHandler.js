@@ -5,6 +5,7 @@ import {
 } from "../../state/gameState.js";
 
 import { broadcast } from "../../utils/socketUtils.js";
+import { resolveActor } from "../../utils/actorUtils.js";
 
 import { checkWin } from "../game/gameFlow.js";
 
@@ -17,6 +18,9 @@ export function handlePlayerHit(ws, data) {
   const roomId = client.roomId;
 
   const targetId = data.playerId;
+
+  // A bot's shot is sent by the host with the bot as attackerId
+  const attackerId = resolveActor(client, data.attackerId);
 
   if (health[targetId] == null) return;
 
@@ -36,7 +40,7 @@ export function handlePlayerHit(ws, data) {
 
     broadcast(roomId, "player_eliminated", {
       victimId: targetId,
-      killerId: client.playerId
+      killerId: attackerId
     });
 
     checkWin(roomId);

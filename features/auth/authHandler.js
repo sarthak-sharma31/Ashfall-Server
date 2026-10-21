@@ -3,6 +3,7 @@ import { OAuth2Client } from "google-auth-library";
 
 import Player from "../../models/Player.js";
 import { send } from "../../utils/socketUtils.js";
+import { clients } from "../../state/gameState.js";
 import { generateUID } from "../../utils/helpers.js";
 
 // Accepted Google OAuth client IDs (comma separated):
@@ -48,6 +49,13 @@ async function issueSession(ws, player) {
   player.authTokenHash = hashToken(token);
   player.lastLogin = new Date();
   await player.save();
+
+  // Shown to the other players in a match (scoreboard, kill feed)
+  const client = clients.get(ws);
+  if (client) {
+    client.uid = player.uid;
+    client.username = player.username;
+  }
 
   send(ws, "login_success", {
     uid: player.uid,

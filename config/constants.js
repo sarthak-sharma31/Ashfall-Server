@@ -13,3 +13,6 @@ export const HUNT_DURATION = Number(process.env.HUNT_DURATION) || 40;
 export const NEXT_ROUND_DELAY = 5;
 
 export const MAX_ROUNDS = 2;
+
+// Playable maps (Unity scene names). The first is the default.
+export const MAPS = ["NTE", "School", "Showcase"];
