@@ -22,6 +22,9 @@ const wss = new WebSocketServer({ server });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const PING_URL = process.env.PING_URL;
+const PING_INTERVAL = 10 * 60 * 10; // 10 minutes
+
 // Which settings were found (names only, never values)
 const envCheck = ["MONGODB_URI", "MONGO_URI", "GOOGLE_CLIENT_IDS", "MAX_PLAYERS", "LOBBY_DURATION", "HIDE_DURATION", "HUNT_DURATION"]
   .map((name) => `${name}=${process.env[name] ? "set" : "-"}`)
@@ -36,8 +39,45 @@ app.use("/patches", express.static(path.join(__dirname, "public/patches")));
 app.use("/", healthRoute);
 app.use("/", versionRoute);
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: "healthy",
+    service: "Ashfall Game Server",
+    uptime: process.uptime(),
+  });
+});
+
+// ── Ping URL Function ──
+const pingUrl = async () => {
+  if (!PING_URL) {
+    console.error("❌ PING_URL is missing in your .env file");
+    return;
+  }
+
+  try {
+    const response = await fetch(PING_URL, {
+      signal: AbortSignal.timeout(15000),
+    });
+
+    console.log(
+      `✅ Ping response from Ashfall: ${response.status} | ${PING_URL} | ${new Date().toISOString()}`
+    );
+
+    await response.body?.cancel();
+  } catch (error) {
+    console.error(
+      `❌ Ping failed: ${PING_URL} | ${error.message} | ${new Date().toISOString()}`
+    );
+  }
+};
+
 initializeSocket(wss);
 
 server.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
+
+  // Ping immediately, then every 10 minutes
+  pingUrl();
+  setInterval(pingUrl, PING_INTERVAL);
 });
