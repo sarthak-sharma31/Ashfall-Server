@@ -23,7 +23,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PING_URL = process.env.PING_URL;
-const PING_INTERVAL = 10 * 60 * 10; // 10 minutes
+const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
 // Which settings were found (names only, never values)
 const envCheck = ["MONGODB_URI", "MONGO_URI", "GOOGLE_CLIENT_IDS", "MAX_PLAYERS", "LOBBY_DURATION", "HIDE_DURATION", "HUNT_DURATION"]
